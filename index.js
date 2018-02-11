@@ -319,9 +319,9 @@ module.exports = (cmd, args, opts) => {
 
 	handleInput(spawned, parsed.opts);
 
-	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
-	spawned.catch = onrejected => handlePromise().catch(onrejected);
-
+	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected); // execa(...).then時會call
+	spawned.catch = onrejected => handlePromise().catch(onrejected); // execa(...).catch時會call
+	
 	return spawned;
 };
 
