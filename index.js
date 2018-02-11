@@ -194,20 +194,29 @@ function joinCmd(cmd, args) {
 }
 
 module.exports = (cmd, args, opts) => {
+	// console.log('cmd: ', cmd); // cmd: 指令
+	// console.log('args: ', args); // args: 傳入的參數
+	// console.log('opts: ', opts); // opts: 傳入的options
 	const parsed = handleArgs(cmd, args, opts);
+	// console.log('handleArgs: ', parsed); // parsed: 回傳parsed後的obj
 	const encoding = parsed.opts.encoding;
 	const maxBuffer = parsed.opts.maxBuffer;
 	const joinedCmd = joinCmd(cmd, args);
+	// console.log('joinedCmd: ', joinedCmd); // 把cmd和args合併
 
 	let spawned;
 	try {
 		spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
+		// return 一個childprocess物件
+		// console.log('spawned: ', spawned); // 開一個childProcess執行執行cmd
 	} catch (err) {
 		return Promise.reject(err);
 	}
 
 	let removeExitHandler;
 	if (parsed.opts.cleanup) {
+		// cleanup: Keep track of the spawned process and kill it when the parent process exits.
+		// onExit: fire an event no matter how the process exits
 		removeExitHandler = onExit(() => {
 			spawned.kill();
 		});
@@ -218,12 +227,14 @@ module.exports = (cmd, args, opts) => {
 
 	const cleanupTimeout = () => {
 		if (timeoutId) {
-			clearTimeout(timeoutId);
+			clearTimeout(timeoutId); // Cancels a Timeout object created by setTimeout().
 			timeoutId = null;
 		}
 	};
 
+	// console.log(parsed.opts.timeout);
 	if (parsed.opts.timeout > 0) {
+		// 如果超過時限就把他砍掉
 		timeoutId = setTimeout(() => {
 			timeoutId = null;
 			timedOut = true;
@@ -233,7 +244,7 @@ module.exports = (cmd, args, opts) => {
 
 	const processDone = new Promise(resolve => {
 		spawned.on('exit', (code, signal) => {
-			cleanupTimeout();
+			cleanupTimeout(); // 已經結束了, 所以把settimeout停掉
 			resolve({code, signal});
 		});
 
